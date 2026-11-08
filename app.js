@@ -1,8 +1,13 @@
-const form=document.getElementById('chatForm');
-const input=document.getElementById('prompt');
-const messages=document.getElementById('messages');
-const welcome=document.getElementById('welcome');
-function addBubble(text,who){const el=document.createElement('div');el.className='bubble '+who;el.textContent=text;messages.appendChild(el);el.scrollIntoView({behavior:'smooth',block:'end'});}
-form.addEventListener('submit',e=>{e.preventDefault();const value=input.value.trim();if(!value)return;welcome.style.display='none';addBubble(value,'user');input.value='';addBubble('پیامت رو دریافت کردم. در این نسخه هنوز به مدل هوش مصنوعی متصل نیستم؛ مرحلهٔ بعد اتصال امن مغز رهاست.','assistant');});
+const form=document.getElementById('chatForm'),input=document.getElementById('prompt'),messages=document.getElementById('messages'),welcome=document.getElementById('welcome'),statusEl=document.getElementById('memoryStatus');
+const DB='raha_local_memory', STORE='messages';
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function allMessages(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function saveMessage(role,text){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add({role,text,createdAt:new Date().toISOString()});r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);});}
+function bubble(text,role){const el=document.createElement('div');el.className='bubble '+role;el.textContent=text;messages.appendChild(el);}
+async function refresh(){const items=await allMessages();messages.innerHTML='';welcome.style.display=items.length?'none':'block';items.forEach(m=>bubble(m.text,m.role));statusEl.textContent=`${items.length} پیام در این مرورگر ذخیره شده`;}
+form.addEventListener('submit',async e=>{e.preventDefault();const v=input.value.trim();if(!v)return;input.value='';await saveMessage('user',v);await saveMessage('assistant','پیامت را ذخیره کردم. اتصال مدل هوش مصنوعی هنوز در مرحلهٔ بعد اضافه می‌شود.');await refresh();});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+document.getElementById('exportBtn').addEventListener('click',async()=>{const data={format:'raha-backup-v1',exportedAt:new Date().toISOString(),messages:await allMessages()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='raha-backup.json';a.click();URL.revokeObjectURL(url);});
+document.getElementById('importFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='raha-backup-v1'||!Array.isArray(data.messages))throw Error('invalid');const db=await openDB();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);data.messages.forEach(m=>{if(typeof m.text==='string'&&['user','assistant'].includes(m.role))store.add({role:m.role,text:m.text,createdAt:m.createdAt||new Date().toISOString()});});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});await refresh();alert('نسخهٔ پشتیبان بازیابی شد.');}catch{alert('فایل پشتیبان معتبر نیست.');}e.target.value='';});
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+refresh().catch(()=>statusEl.textContent='مرورگر از حافظهٔ محلی پشتیبانی نکرد.');

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="رها؛ دستیار شخصی هوشمند">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <title>رها | دستیار شخصی</title>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><div class="mark">ر</div><div><h1>رها</h1><p>دستیار شخصی تو</p></div></div>
+      <span class="status"><i></i> نسخهٔ اولیه</span>
+    </header>
+    <section class="welcome" id="welcome">
+      <div class="orb">ر</div>
+      <h2>از کجا شروع کنیم؟</h2>
+      <p>من رها هستم. این اولین پوستهٔ قابل نصب من روی گوشی توست؛ قدم‌به‌قدم قابلیت‌های واقعی را به آن اضافه می‌کنیم.</p>
+    </section>
+    <section class="messages" id="messages" aria-live="polite"></section>
+    <form id="chatForm" class="composer">
+      <textarea id="prompt" rows="1" placeholder="پیامت رو برای رها بنویس..." aria-label="پیام"></textarea>
+      <button type="submit" aria-label="ارسال">↑</button>
+    </form>
+    <footer>فعلاً حالت نمایشی محلی · اتصال هوش مصنوعی در مرحلهٔ بعد</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "رها | دستیار شخصی",
+  "short_name": "رها",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101114",
+  "theme_color": "#101114",
+  "description": "دستیار شخصی رها"
+}
